@@ -1,0 +1,87 @@
+---
+title: 'DSC520: Week 3, Part 2'
+author: "Kristie Kooken"
+date: "`r Sys.Date()`"
+output: pdf_document
+classoption: landscape
+---
+```{r, include=F}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE,warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(ggplot2)
+theme_set(theme_minimal())
+setwd("C:/Users/kkooken/Documents/EDU/520/R/dsc520-1")
+## Load the 2014 American Community Survey data `data/acs-14-1yr-s0201.csv` to
+acs_df <- read.csv("data/acs-14-1yr-s0201.csv")
+```
+
+## Question 1: What are the elements in your data (including the categories and data types)?
+```{r}
+sapply(acs_df, class)
+```
+
+## Question 2: Please provide the output from the following functions: str(); nrow(); ncol()
+```{r}
+str(acs_df)
+nrow(acs_df)
+ncol(acs_df)
+```
+
+## Question 3: Create a Histogram of the HS Degree variable using the ggplot2 package including bin, title and axis labels
+```{r}
+ggplot(acs_df, aes(HSDegree)) + geom_histogram(bins=11) + ggtitle("Percentage of Subjects Holding HS Degree") + xlab("HS Degree") + ylab("Counts of Subjects")
+```
+
+## Question 4.1-4.5: Answers to questions about the produced histogram
+This histogram of the high school data is unimodel, not symmetrical and is not bell shaped. The plot is negatively skewed to the left.
+
+
+## Question 4.6 Below is the same plot with a normal curve added 
+```{r}
+gplot1 <- ggplot(acs_df, aes(HSDegree)) + geom_histogram(aes(y=..density..), bins=11) + 
+  ggtitle("Percentage of Subjects Holding HS Degree") + xlab("HS Degree") + ylab("Density")
+
+gplot1 + stat_function(fun=dnorm, args = list(mean = mean(acs_df$HSDegree,na.rm=TRUE), sd=sd(acs_df$HSDegree, na.rm = TRUE)), color='black', size=1)
+
+```
+
+## Question 4.7 Response:
+Adding a normal curve to this histogram does not model this data well as the histogram is skewed to the left meaning that a higher level of occurrences happen at the higher end of the x axis. 
+
+## Question 5: Create a probability plot of the high school data
+
+```{r}
+qqplot1 <- ggplot(acs_df, aes(sample = HSDegree)) +  stat_qq() +
+   xlab("Theoretical") + ylab("Sample")
+
+qqplot1
+```
+
+## Question 6.1-6.2 Based on what you see in this probability plot, is the distribution approximately normal?
+
+Based on the probability plot, this distribution appears to be not symmetrical and negatively skewed, this is because the plotted line is not symmetric and appears to curve outward like a bow or plateau at the top. A positive skew would be curved in, going upward. 
+
+## Question 7 Quantify normality with numbers using the stat.desc() function
+
+```{r}
+library(pastecs)
+stat.desc(acs_df$HSDegree, basic = FALSE, norm=TRUE)
+
+# Descriptive stats for z scores of HS Degree variable
+library(psych)
+describe(scale(acs_df$HSDegree))
+```
+
+## Question 8: Result interpretation
+
+For the variable HS Degree, the skew is -1.67, because this value is negative, this means that there is a build up of high scores. Likewise, the value of 4.35 for Kurtosis is a positive number meaning that the shape of plot would be pointy with heavy-tailed distribution. Likewise, since both these values are not zero, this indicates that the distribution is not normal. 
+
+For the z scores, I generated z scores on the variable HS Degree and confirmed the mean is 0 and standard deviation is 1 as expected. In order to see the z score for skew and kurtosis, the formula of 
+
+((variable-0)/SE for variable) 
+
+can be used. This equation is condensed with the outputted variables 2SE for Skew and Kurtosis. The 2SE value is either skew or kurtosis divided by 2*standard error and thus a handy way to check if the skew or kurtosis are significantly different than chance. Both of these values are greater than 1 (representing p < 0.05), indicating significant skew and significant kurtosis for the HS Degree variable. In fact, the z score values are significant at p < 0.001 (having a value greater than 1.65 which represents 1.65 times 2 - a z score of 3.29)
+
+Our sample size is relatively small (n=136) and adding more data could make using these variables to determine the significance of skew and kurtosis challenging. This method is better for smaller sample sizes. With larger samples, histograms are better indicators of the shape of the distribution. 
